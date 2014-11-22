@@ -1,0 +1,92 @@
+---
+title: "PML-Week3Assignment"
+author: "Bhaskar"
+date: "November 18, 2014"
+output: html_document
+---
+  
+## Executive Summary
+Based on the data provided from the Weight Lifting Exercise, a model was fitted and used to predict a sample test set. High degree of sensitivity and specificity was obtained from this model. This means that the motion sensors will be able to detect incorrect ways of doing the dumbell exercise based on this model.
+  
+### Background
+  
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset). 
+  
+### Data Analysis  
+  
+First let us explore the data
+  
+```{r}
+  options(warn=-1);
+  library(caret);library(randomForest);library(Hmisc);library(foreach);library(doParallel) 
+  dftrg <- read.table('./pml-training.csv', sep=',',header = TRUE, na.strings=c("#DIV/0!"))
+  str(dftrg)
+```
+  
+We see that there are a large number of NAs in the data. We wil remove any columns that have NAs as well as the first 7 columns since they dont seem relevant
+  
+```{r}  
+## set seed to ensure repeatability
+  set.seed(2345)
+  vct <- logical()
+## remove the first 7 columns since they are not valid predictors
+  tst12 = dftrg[,-c(1:7)]
+## convert factors to numbers
+  for (i in 1:(ncol(tst12)-1)) {
+  tst12[,i] <- as.numeric(as.character(tst12[,i]))
+  }
+  ## select only the predictors that have no NAs
+  for (i in 1:(ncol(tst12)-1)) {
+      if (sum(is.na(tst12[i])) == 0) vct[i] <- TRUE
+      else
+        vct[i] <- FALSE
+  }
+  
+  tst13 <- tst12[,vct]  
+
+```
+  
+### Partition Data Set  
+  
+Now we can partition into training (60%) and test sets
+  
+```{r}  
+  inTrain = createDataPartition(dftrg$classe, p = 0.6)[[1]]
+  training = tst13[inTrain,]
+  testing = tst13[-inTrain,]
+```
+  
+## Fitting Model, Predicting with the Model and then calculating the Confusion Matrix to validate the model  
+  
+Now we will fit the randomForest model using 150 trees  
+  
+After fitting the model we will use it to predict with the test set and then create a confusion matrix  
+  
+```{r}  
+  model <- randomForest(training[-ncol(training)],training$classe,ntree=150)
+  pr <- predict(model,newdata=testing[-ncol(testing)])
+  confusionMatrix(pr,testing$classe)
+```  
+  
+Since we are getting high degree of sensitivity and specificity per the confusion matrix, we will apply this model to the submission test cases.  
+  
+### Applying Model to submission test cases  
+  
+```{r}  
+dftst <- read.table('./pml-testing.csv', sep=',',header = TRUE, na.strings=c("#DIV/0!"))
+tst23 = dftst[,-c(1:7)]
+  for (i in 1:(ncol(tst23)-1)) { tst23[,i] <- as.numeric(as.character(tst23[,i]))}
+  ## Remove the same columns that we removed for training set  
+  tst24 <- tst23[,vct]
+  pr2 <- predict(model,newdata=tst24[-ncol(testing)])
+ ## this is the function that was provided
+  
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+      filename = paste0("problem_id_",i,".txt")
+      write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+pml_write_files(pr2)  
+```
