@@ -36,6 +36,11 @@
 
 <p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
 
+<div class="highlight highlight-r"><pre>  options(<span class="pl-v">warn</span><span class="pl-k">=</span><span class="pl-k">-</span><span class="pl-c1">1</span>);
+  library(<span class="pl-vo">caret</span>);library(<span class="pl-vo">randomForest</span>);library(<span class="pl-vo">Hmisc</span>);library(<span class="pl-vo">foreach</span>);library(<span class="pl-vo">doParallel</span>) 
+  <span class="pl-vo">dftrg</span> <span class="pl-k">&lt;-</span> read.table(<span class="pl-s1"><span class="pl-pds">'</span>./pml-training.csv<span class="pl-pds">'</span></span>, <span class="pl-v">sep</span><span class="pl-k">=</span><span class="pl-s1"><span class="pl-pds">'</span>,<span class="pl-pds">'</span></span>,<span class="pl-v">header</span> <span class="pl-k">=</span> <span class="pl-c1">TRUE</span>, <span class="pl-v">na.strings</span><span class="pl-k">=</span>c(<span class="pl-s1"><span class="pl-pds">"</span>#DIV/0!<span class="pl-pds">"</span></span>))
+  str(<span class="pl-vo">dftrg</span>)</pre></div>
+
 <pre><code>$ cd your_repo_root/repo_name
 $ git fetch origin
 $ git checkout gh-pages
